@@ -26,4 +26,545 @@ const questions = [
         responses: [
             'A beautiful answer. Love is indeed a conscious choice.',
             'Home is wherever two hearts choose to be together.',
-            'Two souls that belong together—like you and me.'\n        ]\n    },\n    {\n        text: 'If the world became difficult tomorrow... Would you still choose us?',\n        options: [\n            'Always. Through anything.',\n            'Forever, no matter what.',\n            'Yes. A thousand times, yes.'\n        ],\n        responses: [\n            'Your commitment is my greatest blessing.',\n            'That promise means everything to me.',\n            'Thank you for never letting me doubt us.'\n        ]\n    },\n    {\n        text: 'What makes someone impossible to replace?',\n        options: [\n            'The way they see you.',\n            'Their presence in your life.',\n            'The love they give so freely.'\n        ],\n        responses: [\n            'You see me like no one else ever could.',\n            'Your presence is my greatest comfort.',\n            'Your love is my reason for everything.'\n        ]\n    },\n    {\n        text: 'Can true love survive distance, silence, and time?',\n        options: [\n            'Yes. True love transcends everything.',\n            'Distance fades when hearts are connected.',\n            'Our love is stronger than any obstacle.'\n        ],\n        responses: [\n            'Real love grows stronger through every challenge.',\n            'Miles apart, but infinitely connected.',\n            'Nothing could ever separate what we have.'\n        ]\n    },\n    {\n        text: 'What does forever mean to you?',\n        options: [\n            'Waking up next to you every morning.',\n            'Growing old together, hand in hand.',\n            'A lifetime of moments with you.'\n        ],\n        responses: [\n            'Every morning with you is my forever.',\n            'I want to grow old and gray beside you.',\n            'Forever is every moment with you.'\n        ]\n    },\n    {\n        text: 'If two hearts truly belong together... Should they ever stop fighting for each other?',\n        options: [\n            'Never. Love is worth fighting for.',\n            'Not when it\\'s real.',\n            'Every day is worth fighting for us.'\n        ],\n        responses: [\n            'I will always fight for us. Always.',\n            'Our love is worth more than anything.',\n            'I\\'ll never stop choosing you.'\n        ]\n    },\n    {\n        text: 'What memory would you never want to lose?',\n        options: [\n            'The day we became us.',\n            'Every moment that felt like home.',\n            'The day I realized you were my forever.'\n        ],\n        responses: [\n            'That day is etched in my heart forever.',\n            'Every moment with you is sacred to me.',\n            'And I promise, Mark, you are my forever.'\n        ]\n    },\n    {\n        text: 'After everything you\\'ve seen... Who deserves your heart?',\n        options: [\n            'The one who has always been there.',\n            'You. It\\'s always been you.',\n            'Only you, Godfrey.'\n        ],\n        responses: [\n            'Thank you for giving me your heart.',\n            'And I will guard yours with my life.',\n            'I love you, Mark. Forever and always.'\n        ]\n    }\n];\n\n// === GLOBAL STATE ===\nlet currentQuestion = 0;\nlet isAnswered = false;\nlet totalQuestionsAnswered = 0;\nlet musicPlaying = false;\nlet isMuted = false;\nlet bgMusic = null;\nlet particles = [];\n\n// === INITIALIZATION ===\nwindow.addEventListener('DOMContentLoaded', () => {\n    initializeStarfield();\n    initializeAudio();\n    initializeEventListeners();\n    startSequence();\n});\n\n// ========================================\n// STARFIELD & BACKGROUND ANIMATION\n// ========================================\nfunction initializeStarfield() {\n    const canvas = document.getElementById('starfield');\n    const ctx = canvas.getContext('2d');\n    \n    // Set canvas size\n    function resizeCanvas() {\n        canvas.width = window.innerWidth;\n        canvas.height = window.innerHeight;\n    }\n    resizeCanvas();\n    window.addEventListener('resize', resizeCanvas);\n    \n    // Create stars\n    const stars = [];\n    const starCount = Math.floor(window.innerWidth / 10);\n    \n    for (let i = 0; i < starCount; i++) {\n        stars.push({\n            x: Math.random() * canvas.width,\n            y: Math.random() * canvas.height,\n            radius: Math.random() * 1.5,\n            opacity: Math.random() * 0.5 + 0.3,\n            twinkleSpeed: Math.random() * 0.02 + 0.005\n        });\n    }\n    \n    // Create particles\n    const particleCount = Math.floor(window.innerWidth / 30);\n    for (let i = 0; i < particleCount; i++) {\n        particles.push({\n            x: Math.random() * canvas.width,\n            y: Math.random() * canvas.height,\n            vx: (Math.random() - 0.5) * 0.3,\n            vy: (Math.random() - 0.5) * 0.3,\n            radius: Math.random() * 0.5,\n            opacity: Math.random() * 0.3 + 0.1\n        });\n    }\n    \n    // Animation loop\n    function animate() {\n        ctx.clearRect(0, 0, canvas.width, canvas.height);\n        \n        // Draw stars\n        stars.forEach((star, i) => {\n            star.opacity += (Math.random() - 0.5) * star.twinkleSpeed;\n            star.opacity = Math.max(0.2, Math.min(0.8, star.opacity));\n            \n            ctx.fillStyle = `rgba(245, 245, 245, ${star.opacity})`;\n            ctx.fillRect(star.x, star.y, star.radius, star.radius);\n        });\n        \n        // Draw particles\n        particles.forEach(particle => {\n            particle.x += particle.vx;\n            particle.y += particle.vy;\n            \n            // Bounce particles\n            if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;\n            if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;\n            \n            ctx.fillStyle = `rgba(212, 165, 116, ${particle.opacity})`;\n            ctx.beginPath();\n            ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);\n            ctx.fill();\n        });\n        \n        requestAnimationFrame(animate);\n    }\n    \n    animate();\n}\n\n// ========================================\n// AUDIO SYSTEM\n// ========================================\nfunction initializeAudio() {\n    bgMusic = document.getElementById('backgroundMusic');\n    const playBtn = document.getElementById('playBtn');\n    const pauseBtn = document.getElementById('pauseBtn');\n    const muteBtn = document.getElementById('muteBtn');\n    const volumeSlider = document.getElementById('volumeSlider');\n    \n    // Generate cinematic soundtrack\n    generateCinematicSoundtrack();\n    \n    playBtn.addEventListener('click', () => {\n        if (bgMusic.paused) {\n            bgMusic.play();\n            musicPlaying = true;\n            playBtn.classList.add('hidden');\n            pauseBtn.classList.remove('hidden');\n        }\n    });\n    \n    pauseBtn.addEventListener('click', () => {\n        bgMusic.pause();\n        musicPlaying = false;\n        pauseBtn.classList.add('hidden');\n        playBtn.classList.remove('hidden');\n    });\n    \n    muteBtn.addEventListener('click', () => {\n        isMuted = !isMuted;\n        bgMusic.muted = isMuted;\n        muteBtn.style.opacity = isMuted ? '0.5' : '1';\n    });\n    \n    volumeSlider.addEventListener('input', (e) => {\n        bgMusic.volume = e.target.value / 100;\n    });\n    \n    bgMusic.volume = 0.7;\n}\n\n// Generate cinematic soundtrack using Web Audio API\nfunction generateCinematicSoundtrack() {\n    const audioContext = new (window.AudioContext || window.webkitAudioContext)();\n    const sampleRate = audioContext.sampleRate;\n    const duration = 60; // 60 seconds\n    const buffer = audioContext.createAudioBuffer(2, sampleRate * duration, sampleRate);\n    const left = buffer.getChannelData(0);\n    const right = buffer.getChannelData(1);\n    \n    // Create orchestral composition\n    let t = 0;\n    for (let i = 0; i < sampleRate * duration; i++) {\n        t = i / sampleRate;\n        \n        // Base frequencies - emotional progression\n        const pianoFreq = 261.63; // Middle C\n        const stringsFreq = 329.63; // E\n        const orchestralFreq = 440; // A\n        \n        // Piano intro (0-20s)\n        let piano = 0;\n        if (t < 20) {\n            piano = Math.sin(2 * Math.PI * pianoFreq * t) * (1 - t / 20) * 0.3;\n        }\n        \n        // Strings join (15-40s)\n        let strings = 0;\n        if (t >= 15 && t < 40) {\n            const fadeIn = Math.max(0, (t - 15) / 10);\n            strings = Math.sin(2 * Math.PI * stringsFreq * t) * fadeIn * 0.2;\n        }\n        \n        // Full orchestra (35-60s)\n        let orchestral = 0;\n        if (t >= 35) {\n            const fadeIn = Math.min(1, (t - 35) / 5);\n            orchestral = Math.sin(2 * Math.PI * orchestralFreq * t) * fadeIn * 0.3;\n        }\n        \n        // Warm choir effect\n        const choirEffect = Math.sin(2 * Math.PI * 220 * t) * 0.1;\n        \n        // Emotional climax\n        let climax = 0;\n        if (t > 50) {\n            climax = Math.sin(2 * Math.PI * (pianoFreq * 2) * t) * ((t - 50) / 10) * 0.2;\n        }\n        \n        const sample = piano + strings + orchestral + choirEffect + climax;\n        left[i] = sample;\n        right[i] = sample * 0.95;\n    }\n    \n    // Convert to WAV and play\n    const wav = audioBufferToWav(buffer);\n    const blob = new Blob([wav], { type: 'audio/wav' });\n    const url = URL.createObjectURL(blob);\n    bgMusic.src = url;\n    bgMusic.loop = true;\n}\n\n// Helper function to convert AudioBuffer to WAV\nfunction audioBufferToWav(audioBuffer) {\n    const numberOfChannels = audioBuffer.numberOfChannels;\n    const sampleRate = audioBuffer.sampleRate;\n    const format = 1; // PCM\n    const bitDepth = 16;\n    \n    const bytesPerSample = bitDepth / 8;\n    const blockAlign = numberOfChannels * bytesPerSample;\n    \n    const channelData = [];\n    for (let i = 0; i < numberOfChannels; i++) {\n        channelData.push(audioBuffer.getChannelData(i));\n    }\n    \n    const interleaved = new Float32Array(audioBuffer.length * numberOfChannels);\n    let offset = 0;\n    for (let i = 0; i < audioBuffer.length; i++) {\n        for (let j = 0; j < numberOfChannels; j++) {\n            interleaved[offset++] = channelData[j][i];\n        }\n    }\n    \n    const dataLength = interleaved.length * bytesPerSample;\n    const buffer = new ArrayBuffer(44 + dataLength);\n    const view = new DataView(buffer);\n    \n    const writeString = (offset, string) => {\n        for (let i = 0; i < string.length; i++) {\n            view.setUint8(offset + i, string.charCodeAt(i));\n        }\n    };\n    \n    writeString(0, 'RIFF');\n    view.setUint32(4, 36 + dataLength, true);\n    writeString(8, 'WAVE');\n    writeString(12, 'fmt ');\n    view.setUint32(16, 16, true);\n    view.setUint16(20, format, true);\n    view.setUint16(22, numberOfChannels, true);\n    view.setUint32(24, sampleRate, true);\n    view.setUint32(28, sampleRate * blockAlign, true);\n    view.setUint16(32, blockAlign, true);\n    view.setUint16(34, bitDepth, true);\n    writeString(36, 'data');\n    view.setUint32(40, dataLength, true);\n    \n    let index = 44;\n    const volume = 0.8;\n    for (let i = 0; i < interleaved.length; i++) {\n        view.setInt16(index, interleaved[i] < 0 ? interleaved[i] * 0x8000 : interleaved[i] * 0x7FFF, true);\n        index += 2;\n    }\n    \n    return buffer;\n}\n\n// ========================================\n// EVENT LISTENERS\n// ========================================\nfunction initializeEventListeners() {\n    const optionButtons = document.querySelectorAll('.option-btn');\n    optionButtons.forEach(btn => {\n        btn.addEventListener('click', handleAnswer);\n    });\n    \n    const replayBtn = document.querySelector('.replay-btn');\n    replayBtn?.addEventListener('click', replayStory);\n    \n    const letterBtn = document.querySelector('.letter-btn');\n    letterBtn?.addEventListener('click', openLetter);\n    \n    const journeyBtn = document.querySelector('.journey-btn');\n    journeyBtn?.addEventListener('click', openJourney);\n    \n    const modalClose = document.querySelector('.modal-close');\n    modalClose?.addEventListener('click', closeModal);\n    \n    const modalOverlay = document.querySelector('.modal-overlay');\n    modalOverlay?.addEventListener('click', closeModal);\n}\n\n// ========================================\n// SEQUENCE MANAGEMENT\n// ========================================\nfunction startSequence() {\n    // Hide loading screen and show intro\n    setTimeout(() => {\n        document.getElementById('loadingScreen').classList.add('hidden');\n        document.getElementById('mainContent').classList.remove('hidden');\n        playHeartbeat();\n    }, 3000);\n    \n    // After intro animations\n    setTimeout(() => {\n        transitionToQuestions();\n    }, 6500);\n}\n\nfunction transitionToQuestions() {\n    const introSection = document.getElementById('introSection');\n    introSection.classList.add('hidden');\n    \n    const questionsSection = document.getElementById('questionsSection');\n    questionsSection.classList.remove('hidden');\n    \n    displayQuestion(0);\n    bgMusic.play();\n    musicPlaying = true;\n    document.getElementById('playBtn').classList.add('hidden');\n    document.getElementById('pauseBtn').classList.remove('hidden');\n}\n\nfunction displayQuestion(index) {\n    if (index >= questions.length) {\n        transitionToFinal();\n        return;\n    }\n    \n    currentQuestion = index;\n    const question = questions[index];\n    \n    document.getElementById('questionNumber').textContent = index + 1;\n    document.getElementById('questionText').textContent = question.text;\n    \n    const optionButtons = document.querySelectorAll('.option-btn');\n    optionButtons.forEach((btn, i) => {\n        btn.querySelector('.option-content').textContent = question.options[i];\n        btn.style.opacity = '1';\n        btn.style.pointerEvents = 'auto';\n    });\n    \n    document.querySelector('.quote-response').classList.add('hidden');\n    isAnswered = false;\n}\n\nfunction handleAnswer(e) {\n    if (isAnswered) return;\n    isAnswered = true;\n    totalQuestionsAnswered++;\n    \n    const optionIndex = e.currentTarget.dataset.option;\n    const question = questions[currentQuestion];\n    const response = question.responses[optionIndex];\n    \n    // Show response\n    const quoteResponse = document.querySelector('.quote-response');\n    document.getElementById('quoteText').textContent = response;\n    quoteResponse.classList.remove('hidden');\n    \n    // Disable all buttons\n    document.querySelectorAll('.option-btn').forEach(btn => {\n        btn.style.opacity = '0.5';\n        btn.style.pointerEvents = 'none';\n    });\n    \n    // Move to next question\n    setTimeout(() => {\n        displayQuestion(currentQuestion + 1);\n    }, 3000);\n}\n\nfunction transitionToFinal() {\n    const questionsSection = document.getElementById('questionsSection');\n    questionsSection.classList.add('hidden');\n    \n    const finalSection = document.getElementById('finalSection');\n    finalSection.classList.remove('hidden');\n    \n    // Wait for final sequence to complete\n    setTimeout(() => {\n        const endingSection = document.getElementById('endingSection');\n        endingSection.classList.remove('hidden');\n    }, 21000);\n}\n\nfunction replayStory() {\n    location.reload();\n}\n\nfunction openLetter() {\n    const letterModal = document.getElementById('letterModal');\n    letterModal.classList.remove('hidden');\n}\n\nfunction openJourney() {\n    // Journey could link to a gallery or timeline\n    alert('Our journey together is the greatest adventure of my life. ❤️');\n}\n\nfunction closeModal() {\n    const letterModal = document.getElementById('letterModal');\n    letterModal.classList.add('hidden');\n}\n\n// ========================================\n// SOUND EFFECTS\n// ========================================\nfunction playHeartbeat() {\n    const audioContext = new (window.AudioContext || window.webkitAudioContext)();\n    const now = audioContext.currentTime;\n    \n    const osc = audioContext.createOscillator();\n    const gain = audioContext.createGain();\n    \n    osc.connect(gain);\n    gain.connect(audioContext.destination);\n    \n    osc.frequency.setValueAtTime(80, now);\n    osc.frequency.exponentialRampToValueAtTime(60, now + 0.1);\n    \n    gain.gain.setValueAtTime(0.3, now);\n    gain.gain.exponentialRampToValueAtTime(0, now + 0.1);\n    \n    osc.start(now);\n    osc.stop(now + 0.1);\n}\n\n// ========================================\n// LOCAL STORAGE\n// ========================================\nfunction saveProgress() {\n    localStorage.setItem('loveStoryProgress', JSON.stringify({\n        currentQuestion,\n        totalQuestionsAnswered,\n        timestamp: new Date().getTime()\n    }));\n}\n\nfunction loadProgress() {\n    const saved = localStorage.getItem('loveStoryProgress');\n    if (saved) {\n        const data = JSON.parse(saved);\n        currentQuestion = data.currentQuestion;\n        totalQuestionsAnswered = data.totalQuestionsAnswered;\n    }\n}\n\n// ========================================\n// ACCESSIBILITY\n// ========================================\ndocument.addEventListener('keydown', (e) => {\n    if (e.key === 'Escape') {\n        closeModal();\n    }\n});\n\n// Announce content for screen readers\nfunction announceToScreenReader(message) {\n    const announcement = document.createElement('div');\n    announcement.setAttribute('role', 'status');\n    announcement.setAttribute('aria-live', 'polite');\n    announcement.style.position = 'absolute';\n    announcement.style.left = '-10000px';\n    announcement.textContent = message;\n    document.body.appendChild(announcement);\n    \n    setTimeout(() => announcement.remove(), 1000);\n}\n\n// ========================================\n// PERFORMANCE OPTIMIZATION\n// ========================================\nfunction requestIdleCallback(callback) {\n    if (window.requestIdleCallback) {\n        window.requestIdleCallback(callback);\n    } else {\n        setTimeout(callback, 1);\n    }\n}\n\n// Initialize progress tracking\nwindow.addEventListener('beforeunload', saveProgress);\nloadProgress();\n\nconsole.log('%c❤️ GODFREY ❤️ MARK ❤️', 'color: #ff6b8a; font-size: 20px; font-weight: bold;');\nconsole.log('%cWelcome to our love story...', 'color: #d4a574; font-size: 14px;');
+            'Two souls that belong together—like you and me.'
+        ]
+    },
+    {
+        text: 'If the world became difficult tomorrow... Would you still choose us?',
+        options: [
+            'Always. Through anything.',
+            'Forever, no matter what.',
+            'Yes. A thousand times, yes.'
+        ],
+        responses: [
+            'Your commitment is my greatest blessing.',
+            'That promise means everything to me.',
+            'Thank you for never letting me doubt us.'
+        ]
+    },
+    {
+        text: 'What makes someone impossible to replace?',
+        options: [
+            'The way they see you.',
+            'Their presence in your life.',
+            'The love they give so freely.'
+        ],
+        responses: [
+            'You see me like no one else ever could.',
+            'Your presence is my greatest comfort.',
+            'Your love is my reason for everything.'
+        ]
+    },
+    {
+        text: 'Can true love survive distance, silence, and time?',
+        options: [
+            'Yes. True love transcends everything.',
+            'Distance fades when hearts are connected.',
+            'Our love is stronger than any obstacle.'
+        ],
+        responses: [
+            'Real love grows stronger through every challenge.',
+            'Miles apart, but infinitely connected.',
+            'Nothing could ever separate what we have.'
+        ]
+    },
+    {
+        text: 'What does forever mean to you?',
+        options: [
+            'Waking up next to you every morning.',
+            'Growing old together, hand in hand.',
+            'A lifetime of moments with you.'
+        ],
+        responses: [
+            'Every morning with you is my forever.',
+            'I want to grow old and gray beside you.',
+            'Forever is every moment with you.'
+        ]
+    },
+    {
+        text: 'If two hearts truly belong together... Should they ever stop fighting for each other?',
+        options: [
+            'Never. Love is worth fighting for.',
+            'Not when it\'s real.',
+            'Every day is worth fighting for us.'
+        ],
+        responses: [
+            'I will always fight for us. Always.',
+            'Our love is worth more than anything.',
+            'I\'ll never stop choosing you.'
+        ]
+    },
+    {
+        text: 'What memory would you never want to lose?',
+        options: [
+            'The day we became us.',
+            'Every moment that felt like home.',
+            'The day I realized you were my forever.'
+        ],
+        responses: [
+            'That day is etched in my heart forever.',
+            'Every moment with you is sacred to me.',
+            'And I promise, Mark, you are my forever.'
+        ]
+    },
+    {
+        text: 'After everything you\'ve seen... Who deserves your heart?',
+        options: [
+            'The one who has always been there.',
+            'You. It\'s always been you.',
+            'Only you, Godfrey.'
+        ],
+        responses: [
+            'Thank you for giving me your heart.',
+            'And I will guard yours with my life.',
+            'I love you, Mark. Forever and always.'
+        ]
+    }
+];
+
+// === GLOBAL STATE ===
+let currentQuestion = 0;
+let isAnswered = false;
+let totalQuestionsAnswered = 0;
+let musicPlaying = false;
+let isMuted = false;
+let bgMusic = null;
+let particles = [];
+
+// === INITIALIZATION ===
+window.addEventListener('DOMContentLoaded', () => {
+    initializeStarfield();
+    initializeAudio();
+    initializeEventListeners();
+    startSequence();
+});
+
+// ========================================
+// STARFIELD & BACKGROUND ANIMATION
+// ========================================
+function initializeStarfield() {
+    const canvas = document.getElementById('starfield');
+    const ctx = canvas.getContext('2d');
+    
+    // Set canvas size
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    // Create stars
+    const stars = [];
+    const starCount = Math.floor(window.innerWidth / 10);
+    
+    for (let i = 0; i < starCount; i++) {
+        stars.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            radius: Math.random() * 1.5,
+            opacity: Math.random() * 0.5 + 0.3,
+            twinkleSpeed: Math.random() * 0.02 + 0.005
+        });
+    }
+    
+    // Create particles
+    const particleCount = Math.floor(window.innerWidth / 30);
+    for (let i = 0; i < particleCount; i++) {
+        particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            vx: (Math.random() - 0.5) * 0.3,
+            vy: (Math.random() - 0.5) * 0.3,
+            radius: Math.random() * 0.5,
+            opacity: Math.random() * 0.3 + 0.1
+        });
+    }
+    
+    // Animation loop
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw stars
+        stars.forEach((star) => {
+            star.opacity += (Math.random() - 0.5) * star.twinkleSpeed;
+            star.opacity = Math.max(0.2, Math.min(0.8, star.opacity));
+            
+            ctx.fillStyle = `rgba(245, 245, 245, ${star.opacity})`;
+            ctx.fillRect(star.x, star.y, star.radius, star.radius);
+        });
+        
+        // Draw particles
+        particles.forEach(particle => {
+            particle.x += particle.vx;
+            particle.y += particle.vy;
+            
+            // Bounce particles
+            if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
+            if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
+            
+            ctx.fillStyle = `rgba(212, 165, 116, ${particle.opacity})`;
+            ctx.beginPath();
+            ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+            ctx.fill();
+        });
+        
+        requestAnimationFrame(animate);
+    }
+    
+    animate();
+}
+
+// ========================================
+// AUDIO SYSTEM
+// ========================================
+function initializeAudio() {
+    bgMusic = document.getElementById('backgroundMusic');
+    const playBtn = document.getElementById('playBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const muteBtn = document.getElementById('muteBtn');
+    const volumeSlider = document.getElementById('volumeSlider');
+    
+    // Generate cinematic soundtrack
+    generateCinematicSoundtrack();
+    
+    playBtn.addEventListener('click', () => {
+        if (bgMusic.paused) {
+            bgMusic.play();
+            musicPlaying = true;
+            playBtn.classList.add('hidden');
+            pauseBtn.classList.remove('hidden');
+        }
+    });
+    
+    pauseBtn.addEventListener('click', () => {
+        bgMusic.pause();
+        musicPlaying = false;
+        pauseBtn.classList.add('hidden');
+        playBtn.classList.remove('hidden');
+    });
+    
+    muteBtn.addEventListener('click', () => {
+        isMuted = !isMuted;
+        bgMusic.muted = isMuted;
+        muteBtn.style.opacity = isMuted ? '0.5' : '1';
+    });
+    
+    volumeSlider.addEventListener('input', (e) => {
+        bgMusic.volume = e.target.value / 100;
+    });
+    
+    bgMusic.volume = 0.7;
+}
+
+// Generate cinematic soundtrack using Web Audio API
+function generateCinematicSoundtrack() {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const sampleRate = audioContext.sampleRate;
+    const duration = 60;
+    const buffer = audioContext.createAudioBuffer(2, sampleRate * duration, sampleRate);
+    const left = buffer.getChannelData(0);
+    const right = buffer.getChannelData(1);
+    
+    // Create orchestral composition
+    let t = 0;
+    for (let i = 0; i < sampleRate * duration; i++) {
+        t = i / sampleRate;
+        
+        const pianoFreq = 261.63;
+        const stringsFreq = 329.63;
+        const orchestralFreq = 440;
+        
+        let piano = 0;
+        if (t < 20) {
+            piano = Math.sin(2 * Math.PI * pianoFreq * t) * (1 - t / 20) * 0.3;
+        }
+        
+        let strings = 0;
+        if (t >= 15 && t < 40) {
+            const fadeIn = Math.max(0, (t - 15) / 10);
+            strings = Math.sin(2 * Math.PI * stringsFreq * t) * fadeIn * 0.2;
+        }
+        
+        let orchestral = 0;
+        if (t >= 35) {
+            const fadeIn = Math.min(1, (t - 35) / 5);
+            orchestral = Math.sin(2 * Math.PI * orchestralFreq * t) * fadeIn * 0.3;
+        }
+        
+        const choirEffect = Math.sin(2 * Math.PI * 220 * t) * 0.1;
+        
+        let climax = 0;
+        if (t > 50) {
+            climax = Math.sin(2 * Math.PI * (pianoFreq * 2) * t) * ((t - 50) / 10) * 0.2;
+        }
+        
+        const sample = piano + strings + orchestral + choirEffect + climax;
+        left[i] = sample;
+        right[i] = sample * 0.95;
+    }
+    
+    const wav = audioBufferToWav(buffer);
+    const blob = new Blob([wav], { type: 'audio/wav' });
+    const url = URL.createObjectURL(blob);
+    bgMusic.src = url;
+    bgMusic.loop = true;
+}
+
+// Helper function to convert AudioBuffer to WAV
+function audioBufferToWav(audioBuffer) {
+    const numberOfChannels = audioBuffer.numberOfChannels;
+    const sampleRate = audioBuffer.sampleRate;
+    const format = 1;
+    const bitDepth = 16;
+    
+    const bytesPerSample = bitDepth / 8;
+    const blockAlign = numberOfChannels * bytesPerSample;
+    
+    const channelData = [];
+    for (let i = 0; i < numberOfChannels; i++) {
+        channelData.push(audioBuffer.getChannelData(i));
+    }
+    
+    const interleaved = new Float32Array(audioBuffer.length * numberOfChannels);
+    let offset = 0;
+    for (let i = 0; i < audioBuffer.length; i++) {
+        for (let j = 0; j < numberOfChannels; j++) {
+            interleaved[offset++] = channelData[j][i];
+        }
+    }
+    
+    const dataLength = interleaved.length * bytesPerSample;
+    const buffer = new ArrayBuffer(44 + dataLength);
+    const view = new DataView(buffer);
+    
+    const writeString = (offset, string) => {
+        for (let i = 0; i < string.length; i++) {
+            view.setUint8(offset + i, string.charCodeAt(i));
+        }
+    };
+    
+    writeString(0, 'RIFF');
+    view.setUint32(4, 36 + dataLength, true);
+    writeString(8, 'WAVE');
+    writeString(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, format, true);
+    view.setUint16(22, numberOfChannels, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * blockAlign, true);
+    view.setUint16(32, blockAlign, true);
+    view.setUint16(34, bitDepth, true);
+    writeString(36, 'data');
+    view.setUint32(40, dataLength, true);
+    
+    let index = 44;
+    for (let i = 0; i < interleaved.length; i++) {
+        view.setInt16(index, interleaved[i] < 0 ? interleaved[i] * 0x8000 : interleaved[i] * 0x7FFF, true);
+        index += 2;
+    }
+    
+    return buffer;
+}
+
+// ========================================
+// EVENT LISTENERS
+// ========================================
+function initializeEventListeners() {
+    const optionButtons = document.querySelectorAll('.option-btn');
+    optionButtons.forEach(btn => {
+        btn.addEventListener('click', handleAnswer);
+    });
+    
+    const replayBtn = document.querySelector('.replay-btn');
+    replayBtn?.addEventListener('click', replayStory);
+    
+    const letterBtn = document.querySelector('.letter-btn');
+    letterBtn?.addEventListener('click', openLetter);
+    
+    const journeyBtn = document.querySelector('.journey-btn');
+    journeyBtn?.addEventListener('click', openJourney);
+    
+    const modalClose = document.querySelector('.modal-close');
+    modalClose?.addEventListener('click', closeModal);
+    
+    const modalOverlay = document.querySelector('.modal-overlay');
+    modalOverlay?.addEventListener('click', closeModal);
+}
+
+// ========================================
+// SEQUENCE MANAGEMENT
+// ========================================
+function startSequence() {
+    setTimeout(() => {
+        document.getElementById('loadingScreen').classList.add('hidden');
+        document.getElementById('mainContent').classList.remove('hidden');
+        playHeartbeat();
+    }, 3000);
+    
+    setTimeout(() => {
+        transitionToQuestions();
+    }, 6500);
+}
+
+function transitionToQuestions() {
+    const introSection = document.getElementById('introSection');
+    introSection.classList.add('hidden');
+    
+    const questionsSection = document.getElementById('questionsSection');
+    questionsSection.classList.remove('hidden');
+    
+    displayQuestion(0);
+    bgMusic.play();
+    musicPlaying = true;
+    document.getElementById('playBtn').classList.add('hidden');
+    document.getElementById('pauseBtn').classList.remove('hidden');
+}
+
+function displayQuestion(index) {
+    if (index >= questions.length) {
+        transitionToFinal();
+        return;
+    }
+    
+    currentQuestion = index;
+    const question = questions[index];
+    
+    document.getElementById('questionNumber').textContent = index + 1;
+    document.getElementById('questionText').textContent = question.text;
+    
+    const optionButtons = document.querySelectorAll('.option-btn');
+    optionButtons.forEach((btn, i) => {
+        btn.querySelector('.option-content').textContent = question.options[i];
+        btn.style.opacity = '1';
+        btn.style.pointerEvents = 'auto';
+    });
+    
+    document.querySelector('.quote-response').classList.add('hidden');
+    isAnswered = false;
+}
+
+function handleAnswer(e) {
+    if (isAnswered) return;
+    isAnswered = true;
+    totalQuestionsAnswered++;
+    
+    const optionIndex = e.currentTarget.dataset.option;
+    const question = questions[currentQuestion];
+    const response = question.responses[optionIndex];
+    
+    const quoteResponse = document.querySelector('.quote-response');
+    document.getElementById('quoteText').textContent = response;
+    quoteResponse.classList.remove('hidden');
+    
+    document.querySelectorAll('.option-btn').forEach(btn => {
+        btn.style.opacity = '0.5';
+        btn.style.pointerEvents = 'none';
+    });
+    
+    setTimeout(() => {
+        displayQuestion(currentQuestion + 1);
+    }, 3000);
+}
+
+function transitionToFinal() {
+    const questionsSection = document.getElementById('questionsSection');
+    questionsSection.classList.add('hidden');
+    
+    const finalSection = document.getElementById('finalSection');
+    finalSection.classList.remove('hidden');
+    
+    setTimeout(() => {
+        const endingSection = document.getElementById('endingSection');
+        endingSection.classList.remove('hidden');
+    }, 21000);
+}
+
+function replayStory() {
+    location.reload();
+}
+
+function openLetter() {
+    const letterModal = document.getElementById('letterModal');
+    letterModal.classList.remove('hidden');
+}
+
+function openJourney() {
+    alert('Our journey together is the greatest adventure of my life. ❤️');
+}
+
+function closeModal() {
+    const letterModal = document.getElementById('letterModal');
+    letterModal.classList.add('hidden');
+}
+
+// ========================================
+// SOUND EFFECTS
+// ========================================
+function playHeartbeat() {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const now = audioContext.currentTime;
+    
+    const osc = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    
+    osc.connect(gain);
+    gain.connect(audioContext.destination);
+    
+    osc.frequency.setValueAtTime(80, now);
+    osc.frequency.exponentialRampToValueAtTime(60, now + 0.1);
+    
+    gain.gain.setValueAtTime(0.3, now);
+    gain.gain.exponentialRampToValueAtTime(0, now + 0.1);
+    
+    osc.start(now);
+    osc.stop(now + 0.1);
+}
+
+// ========================================
+// LOCAL STORAGE
+// ========================================
+function saveProgress() {
+    localStorage.setItem('loveStoryProgress', JSON.stringify({
+        currentQuestion,
+        totalQuestionsAnswered,
+        timestamp: new Date().getTime()
+    }));
+}
+
+function loadProgress() {
+    const saved = localStorage.getItem('loveStoryProgress');
+    if (saved) {
+        const data = JSON.parse(saved);
+        currentQuestion = data.currentQuestion;
+        totalQuestionsAnswered = data.totalQuestionsAnswered;
+    }
+}
+
+// ========================================
+// ACCESSIBILITY
+// ========================================
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeModal();
+    }
+});
+
+function announceToScreenReader(message) {
+    const announcement = document.createElement('div');
+    announcement.setAttribute('role', 'status');
+    announcement.setAttribute('aria-live', 'polite');
+    announcement.style.position = 'absolute';
+    announcement.style.left = '-10000px';
+    announcement.textContent = message;
+    document.body.appendChild(announcement);
+    
+    setTimeout(() => announcement.remove(), 1000);
+}
+
+// Initialize progress tracking
+window.addEventListener('beforeunload', saveProgress);
+loadProgress();
+
+console.log('%c❤️ GODFREY ❤️ MARK ❤️', 'color: #ff6b8a; font-size: 20px; font-weight: bold;');
+console.log('%cWelcome to our love story...', 'color: #d4a574; font-size: 14px;');

@@ -3,104 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Our Love Story - GODFREY & MARK</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <meta name="description" content="A cinematic love story from Godfrey to Mark">
+    <title>Our Story • Godfrey ❤️ Mark</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Loading Screen -->
-    <div id="loading-screen" class="loading-screen active">
-        <div class="loading-content">
-            <div class="spinner"></div>
-            <p>Loading our love story...</p>
-        </div>
+    <!-- BACKGROUND ELEMENTS -->
+    <div class="background-container">
+        <canvas id="starfield"></canvas>
+        <div class="fog-layer"></div>
+        <div class="light-rays"></div>
     </div>
 
-    <!-- Main Container -->
-    <div id="main-container" class="main-container">
-        <!-- Opening Scene -->
-        <section id="opening-scene" class="scene active">
-            <canvas id="starfield"></canvas>
-            <div class="opening-content">
-                <div class="heart-animation" id="heart-form"></div>
-                <div class="text-sequence">
-                    <p class="fade-text" data-text="1">Every great love story begins with one question...</p>
-                    <p class="fade-text" data-text="2">What is love?</p>
-                </div>
-                <button class="btn-continue" onclick="goToQuestions()">Continue</button>
-            </div>
-        </section>
-
-        <!-- Questions Scene -->
-        <section id="questions-scene" class="scene">
-            <canvas id="particle-bg"></canvas>
-            <div class="questions-container">
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progress-fill"></div>
-                </div>
-                <div class="question-content">
-                    <div class="question-number" id="question-number">Question 1 of 40</div>
-                    <h2 id="question-text" class="question-text"></h2>
-                    <div class="choices-container" id="choices-container"></div>
-                </div>
-                <div class="quote-reveal" id="quote-reveal"></div>
-            </div>
-        </section>
-
-        <!-- Ending Scene -->
-        <section id="ending-scene" class="scene">
-            <canvas id="ending-particles"></canvas>
-            <div class="ending-content">
-                <div class="ending-text-sequence">
-                    <p class="ending-text fade-text" data-step="1">After every answer...</p>
-                    <p class="ending-text fade-text" data-step="2">There is only one truth.</p>
-                    <p class="ending-text fade-text" data-step="3">MARK...</p>
-                    <p class="ending-text fade-text" data-step="4">The person who has filled my heart with happiness...</p>
-                    <p class="ending-text fade-text" data-step="5">You are my safest place.</p>
-                    <p class="ending-text fade-text" data-step="6">My greatest blessing.</p>
-                    <p class="ending-text fade-text" data-step="7">My peace.</p>
-                    <p class="ending-text fade-text" data-step="8">My best friend.</p>
-                    <p class="ending-text fade-text" data-step="9">My forever.</p>
-                    <div class="love-declaration" id="love-declaration">
-                        <p>I LOVE YOU</p>
-                    </div>
-                    <div class="heart-burst" id="heart-burst"></div>
-                    <p class="ending-text fade-text" data-step="10">From the very beginning...</p>
-                    <p class="ending-text fade-text" data-step="11">It has always been you.</p>
-                    <p class="ending-text fade-text" data-step="12">I choose you.</p>
-                    <p class="ending-text fade-text" data-step="13">Again.</p>
-                    <p class="ending-text fade-text" data-step="14">And again.</p>
-                    <p class="ending-text fade-text" data-step="15">And every day after.</p>
-                </div>
-                <div class="final-declaration" id="final-declaration">
-                    <div class="declaration-heart">❤</div>
-                    <div class="declaration-name">GODFREY</div>
-                    <div class="declaration-heart">❤</div>
-                    <div class="declaration-text">Loves</div>
-                    <div class="declaration-heart">❤</div>
-                    <div class="declaration-name">MARK</div>
-                    <div class="declaration-heart">❤</div>
-                    <div class="declaration-text forever">Forever.</div>
-                </div>
-                <button class="btn-replay" onclick="replayStory()">Replay our love story</button>
-            </div>
-        </section>
-    </div>
-
-    <!-- Music Controls -->
-    <div class="music-controls">
-        <button id="music-toggle" class="music-btn" onclick="toggleMusic()">
-            <span class="music-icon">🎵</span>
+    <!-- AUDIO CONTROLS -->
+    <div class="audio-controls">
+        <button id="playBtn" class="audio-btn" aria-label="Play music">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7z"/>
+            </svg>
         </button>
-        <div class="volume-slider-container">
-            <input type="range" id="volume-slider" class="volume-slider" min="0" max="100" value="50" oninput="changeVolume(this.value)">
+        <button id="pauseBtn" class="audio-btn hidden" aria-label="Pause music">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+            </svg>
+        </button>
+        <button id="muteBtn" class="audio-btn" aria-label="Mute music">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16.6915026,12.4744748 L3.50612381,13.2599618 C3.19218622,13.2599618 3.03521743,13.4170592 3.03521743,13.5741566 L1.15159189,20.0151496 C0.8376543,20.8006365 0.99,21.89 1.77946707,22.52 C2.41,22.99 3.50612381,23.1 4.13399899,22.8429026 L21.714504,14.0454487 C22.6563168,13.5741566 23.1272231,12.6315722 22.6563168,11.6889879 L4.13399899,1.16109852 C3.34915502,0.9 2.40734225,0.9 1.77946707,1.4429026 C0.994623095,2.07 0.837654326,3.1594005 1.15159189,3.94788695 L3.03521743,10.3888796 C3.03521743,10.5459771 3.03521743,10.7030745 3.50612381,10.7030745 L16.6915026,11.4885614 C16.6915026,11.4885614 17.1624089,11.4885614 17.1624089,11.0172693 L17.1624089,12.6315722 C17.1624089,12.3744748 17.1624089,12.4744748 16.6915026,12.4744748 Z"/>
+            </svg>
+        </button>
+        <div class="volume-slider">
+            <input type="range" id="volumeSlider" min="0" max="100" value="70" aria-label="Volume control">
         </div>
     </div>
 
-    <!-- Hidden Audio Elements -->
-    <audio id="background-music" loop>
-        <source src="data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==" type="audio/wav">
-    </audio>
+    <!-- LOADING SCREEN -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-heart"></div>
+        <p class="loading-text">Our story is loading...</p>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main id="mainContent" class="main-content hidden">
+        
+        <!-- INTRO SECTION -->
+        <section id="introSection" class="scene-section intro-section">
+            <div class="intro-container">
+                <div class="intro-heart"></div>
+                <div class="intro-text">
+                    <h1 class="intro-title-1">Some stories are written by destiny...</h1>
+                    <h1 class="intro-title-2">...others are written by two hearts.</h1>
+                    <h2 class="intro-welcome">Welcome, Mark.</h2>
+                </div>
+            </div>
+        </section>
+
+        <!-- QUESTIONS SECTION -->
+        <section id="questionsSection" class="scene-section questions-section hidden">
+            <div class="questions-container">
+                <div class="question-card-wrapper">
+                    <div class="question-number">
+                        <span id="questionNumber">1</span>
+                        <span class="question-total">/8</span>
+                    </div>
+                    
+                    <div class="question-display">
+                        <h2 id="questionText" class="question-text"></h2>
+                    </div>
+
+                    <div class="question-options">
+                        <button class="option-btn option-1" data-option="0">
+                            <span class="option-content"></span>
+                        </button>
+                        <button class="option-btn option-2" data-option="1">
+                            <span class="option-content"></span>
+                        </button>
+                        <button class="option-btn option-3" data-option="2">
+                            <span class="option-content"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="quote-response hidden">
+                    <p id="quoteText" class="quote-text"></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- FINAL REVEAL SECTION -->
+        <section id="finalSection" class="scene-section final-section hidden">
+            <div class="final-container">
+                <div class="final-timeline">
+                    <div class="final-text-1">Mark...</div>
+                    <div class="final-text-2">You walked into my life...</div>
+                    <div class="final-text-3">...and quietly became my favorite person.</div>
+                    <div class="final-text-4">You became my peace.</div>
+                    <div class="final-text-5">My greatest blessing.</div>
+                    <div class="final-text-6">My forever.</div>
+                    <div class="final-heart-burst"></div>
+                    <div class="love-you-text">I LOVE YOU</div>
+                    <div class="final-signature">
+                        <p>Forever and always,</p>
+                        <p class="signature-name">GODFREY ❤️ MARK</p>
+                    </div>
+                    <div class="final-closing">
+                        <p>Every love story is beautiful...</p>
+                        <p>but ours is my favorite.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ENDING BUTTONS -->
+        <section id="endingSection" class="scene-section ending-section hidden">
+            <div class="ending-buttons">
+                <button class="ending-btn replay-btn">
+                    <span class="btn-icon">▶</span>
+                    Replay Our Story
+                </button>
+                <button class="ending-btn letter-btn">
+                    <span class="btn-icon">✉</span>
+                    Read My Letter
+                </button>
+                <button class="ending-btn journey-btn">
+                    <span class="btn-icon">📖</span>
+                    Our Journey
+                </button>
+            </div>
+        </section>
+
+        <!-- LETTER MODAL -->
+        <div id="letterModal" class="modal hidden">
+            <div class="modal-overlay"></div>
+            <div class="modal-content">
+                <button class="modal-close">&times;</button>
+                <div class="letter-content">
+                    <div class="letter-header">A Letter to My Love</div>
+                    <div class="letter-body">
+                        <p>My Dearest Mark,</p>
+                        
+                        <p>Where do I even begin? Words feel too small for what my heart holds for you. But I'll try, because you deserve to know exactly what you mean to me.</p>
+                        
+                        <p>You walked into my life quietly, and somehow, you became the loudest, most beautiful thing I've ever felt. In a world full of noise, you are my silence. In the chaos, you are my calm. You didn't just become part of my life—you became the reason I want to live it fully.</p>
+                        
+                        <p>I want to thank you. Thank you for choosing me, even when it wasn't easy. Thank you for staying when you could have left. Thank you for seeing me—really seeing me—and loving me anyway. Thank you for every laugh, every conversation that lasted until dawn, every moment where the world felt like it was just us.</p>
+                        
+                        <p>I promise you this: My commitment to you isn't just a choice I made once. It's a choice I make every single day. It's in the small things—the way I think of you first, the way your happiness matters more than anything else. It's in the big things—standing beside you through every storm, believing in your dreams as if they were my own.</p>
+                        
+                        <p>You are my peace. Not because everything is easy, but because with you, I'm not afraid of hard things. You've shown me what it means to be truly loyal, and I promise to give you the same in return. Forever isn't just a word between us—it's a vow.</p>
+                        
+                        <p>I'm so grateful for you. For your heart, your strength, your kindness, your humor, your presence. You make me want to be better. You inspire me. You complete me in ways I didn't know I needed.</p>
+                        
+                        <p>As I look toward our future, I see endless possibilities. I see us growing old together, building memories that will fill a lifetime. I see love that deepens with each passing year. I see a forever that's not just real—it's extraordinary.</p>
+                        
+                        <p>Mark, you are my greatest blessing. You are my hope. You are my heart.</p>
+                        
+                        <p>I love you more than words could ever express. Not just today, not just tomorrow—but always. Through every season, every challenge, every beautiful ordinary moment.</p>
+                        
+                        <p>Yours completely,</p>
+                        <p class="letter-signature">Godfrey ❤️</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- AUDIO ELEMENTS -->
+    <audio id="backgroundMusic" loop></audio>
+    <audio id="heartbeatSound" preload="auto"></audio>
+    <audio id="windSound" loop></audio>
+    <audio id="sparkleSound" preload="auto"></audio>
+    <audio id="chimeSound" preload="auto"></audio>
+    <audio id="whooshSound" preload="auto"></audio>
+    <audio id="impactSound" preload="auto"></audio>
 
     <script src="script.js"></script>
 </body>
