@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Love Story - GODFREY & MARK</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen active">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Loading our love story...</p>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div id="main-container" class="main-container">
+        <!-- Opening Scene -->
+        <section id="opening-scene" class="scene active">
+            <canvas id="starfield"></canvas>
+            <div class="opening-content">
+                <div class="heart-animation" id="heart-form"></div>
+                <div class="text-sequence">
+                    <p class="fade-text" data-text="1">Every great love story begins with one question...</p>
+                    <p class="fade-text" data-text="2">What is love?</p>
+                </div>
+                <button class="btn-continue" onclick="goToQuestions()">Continue</button>
+            </div>
+        </section>
+
+        <!-- Questions Scene -->
+        <section id="questions-scene" class="scene">
+            <canvas id="particle-bg"></canvas>
+            <div class="questions-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <div class="question-content">
+                    <div class="question-number" id="question-number">Question 1 of 40</div>
+                    <h2 id="question-text" class="question-text"></h2>
+                    <div class="choices-container" id="choices-container"></div>
+                </div>
+                <div class="quote-reveal" id="quote-reveal"></div>
+            </div>
+        </section>
+
+        <!-- Ending Scene -->
+        <section id="ending-scene" class="scene">
+            <canvas id="ending-particles"></canvas>
+            <div class="ending-content">
+                <div class="ending-text-sequence">
+                    <p class="ending-text fade-text" data-step="1">After every answer...</p>
+                    <p class="ending-text fade-text" data-step="2">There is only one truth.</p>
+                    <p class="ending-text fade-text" data-step="3">MARK...</p>
+                    <p class="ending-text fade-text" data-step="4">The person who has filled my heart with happiness...</p>
+                    <p class="ending-text fade-text" data-step="5">You are my safest place.</p>
+                    <p class="ending-text fade-text" data-step="6">My greatest blessing.</p>
+                    <p class="ending-text fade-text" data-step="7">My peace.</p>
+                    <p class="ending-text fade-text" data-step="8">My best friend.</p>
+                    <p class="ending-text fade-text" data-step="9">My forever.</p>
+                    <div class="love-declaration" id="love-declaration">
+                        <p>I LOVE YOU</p>
+                    </div>
+                    <div class="heart-burst" id="heart-burst"></div>
+                    <p class="ending-text fade-text" data-step="10">From the very beginning...</p>
+                    <p class="ending-text fade-text" data-step="11">It has always been you.</p>
+                    <p class="ending-text fade-text" data-step="12">I choose you.</p>
+                    <p class="ending-text fade-text" data-step="13">Again.</p>
+                    <p class="ending-text fade-text" data-step="14">And again.</p>
+                    <p class="ending-text fade-text" data-step="15">And every day after.</p>
+                </div>
+                <div class="final-declaration" id="final-declaration">
+                    <div class="declaration-heart">❤</div>
+                    <div class="declaration-name">GODFREY</div>
+                    <div class="declaration-heart">❤</div>
+                    <div class="declaration-text">Loves</div>
+                    <div class="declaration-heart">❤</div>
+                    <div class="declaration-name">MARK</div>
+                    <div class="declaration-heart">❤</div>
+                    <div class="declaration-text forever">Forever.</div>
+                </div>
+                <button class="btn-replay" onclick="replayStory()">Replay our love story</button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Music Controls -->
+    <div class="music-controls">
+        <button id="music-toggle" class="music-btn" onclick="toggleMusic()">
+            <span class="music-icon">🎵</span>
+        </button>
+        <div class="volume-slider-container">
+            <input type="range" id="volume-slider" class="volume-slider" min="0" max="100" value="50" oninput="changeVolume(this.value)">
+        </div>
+    </div>
+
+    <!-- Hidden Audio Elements -->
+    <audio id="background-music" loop>
+        <source src="data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==" type="audio/wav">
+    </audio>
+
+    <script src="script.js"></script>
+</body>
+</html>
