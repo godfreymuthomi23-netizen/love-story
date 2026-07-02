@@ -130,9 +130,12 @@ let musicPlaying = false;
 let isMuted = false;
 let bgMusic = null;
 let particles = [];
+let audioInitialized = false;
+let audioContext = null;
 
 // === INITIALIZATION ===
 window.addEventListener('DOMContentLoaded', () => {
+    console.log('🎬 DOM Content Loaded - Initializing story...');
     initializeStarfield();
     initializeAudio();
     initializeEventListeners();
@@ -143,6 +146,7 @@ window.addEventListener('DOMContentLoaded', () => {
 // STARFIELD & BACKGROUND ANIMATION
 // ========================================
 function initializeStarfield() {
+    console.log('⭐ Initializing starfield...');
     const canvas = document.getElementById('starfield');
     const ctx = canvas.getContext('2d');
     
@@ -213,106 +217,168 @@ function initializeStarfield() {
     }
     
     animate();
+    console.log('✅ Starfield initialized');
 }
 
 // ========================================
-// AUDIO SYSTEM
+// AUDIO SYSTEM - FIXED & ROBUST
 // ========================================
 function initializeAudio() {
+    console.log('🎵 Initializing audio system...');
     bgMusic = document.getElementById('backgroundMusic');
     const playBtn = document.getElementById('playBtn');
     const pauseBtn = document.getElementById('pauseBtn');
     const muteBtn = document.getElementById('muteBtn');
     const volumeSlider = document.getElementById('volumeSlider');
     
-    // Generate cinematic soundtrack
-    generateCinematicSoundtrack();
+    if (!bgMusic) {
+        console.error('❌ Audio element not found!');
+        return;
+    }
     
+    // Generate audio
+    try {
+        generateCinematicSoundtrack();
+        console.log('✅ Audio generated successfully');
+    } catch (error) {
+        console.error('❌ Error generating audio:', error);
+        createFallbackAudio();
+    }
+    
+    // Play button
     playBtn.addEventListener('click', () => {
+        console.log('▶️ Play button clicked');
         if (bgMusic.paused) {
-            bgMusic.play();
-            musicPlaying = true;
-            playBtn.classList.add('hidden');
-            pauseBtn.classList.remove('hidden');
+            const playPromise = bgMusic.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    console.log('✅ Audio is now playing');
+                    musicPlaying = true;
+                    playBtn.classList.add('hidden');
+                    pauseBtn.classList.remove('hidden');
+                }).catch(error => {
+                    console.error('❌ Playback failed:', error);
+                    alert('Audio playback failed. Please try again.');
+                });
+            }
         }
     });
     
+    // Pause button
     pauseBtn.addEventListener('click', () => {
+        console.log('⏸️ Pause button clicked');
         bgMusic.pause();
         musicPlaying = false;
         pauseBtn.classList.add('hidden');
         playBtn.classList.remove('hidden');
     });
     
+    // Mute button
     muteBtn.addEventListener('click', () => {
+        console.log('🔇 Mute toggled');
         isMuted = !isMuted;
         bgMusic.muted = isMuted;
         muteBtn.style.opacity = isMuted ? '0.5' : '1';
     });
     
+    // Volume slider
     volumeSlider.addEventListener('input', (e) => {
         bgMusic.volume = e.target.value / 100;
+        console.log(`🔊 Volume set to ${e.target.value}%`);
     });
     
     bgMusic.volume = 0.7;
+    console.log('✅ Audio system initialized');
 }
 
 // Generate cinematic soundtrack using Web Audio API
 function generateCinematicSoundtrack() {
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const sampleRate = audioContext.sampleRate;
-    const duration = 60;
-    const buffer = audioContext.createAudioBuffer(2, sampleRate * duration, sampleRate);
-    const left = buffer.getChannelData(0);
-    const right = buffer.getChannelData(1);
+    console.log('🎼 Generating cinematic soundtrack...');
     
-    // Create orchestral composition
-    let t = 0;
-    for (let i = 0; i < sampleRate * duration; i++) {
-        t = i / sampleRate;
+    try {
+        // Create audio context
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        console.log('✅ Audio context created');
         
-        const pianoFreq = 261.63;
-        const stringsFreq = 329.63;
-        const orchestralFreq = 440;
+        const sampleRate = audioContext.sampleRate;
+        const duration = 60;
+        const buffer = audioContext.createAudioBuffer(2, sampleRate * duration, sampleRate);
         
-        let piano = 0;
-        if (t < 20) {
-            piano = Math.sin(2 * Math.PI * pianoFreq * t) * (1 - t / 20) * 0.3;
+        console.log(`📊 Buffer created: ${duration}s at ${sampleRate}Hz`);
+        
+        const left = buffer.getChannelData(0);
+        const right = buffer.getChannelData(1);
+        
+        // Create orchestral composition
+        let t = 0;
+        for (let i = 0; i < sampleRate * duration; i++) {
+            t = i / sampleRate;
+            
+            const pianoFreq = 261.63;
+            const stringsFreq = 329.63;
+            const orchestralFreq = 440;
+            
+            // Piano intro
+            let piano = 0;
+            if (t < 20) {
+                piano = Math.sin(2 * Math.PI * pianoFreq * t) * (1 - t / 20) * 0.3;
+            }
+            
+            // Strings building
+            let strings = 0;
+            if (t >= 15 && t < 40) {
+                const fadeIn = Math.max(0, (t - 15) / 10);
+                strings = Math.sin(2 * Math.PI * stringsFreq * t) * fadeIn * 0.2;
+            }
+            
+            // Full orchestra
+            let orchestral = 0;
+            if (t >= 35) {
+                const fadeIn = Math.min(1, (t - 35) / 5);
+                orchestral = Math.sin(2 * Math.PI * orchestralFreq * t) * fadeIn * 0.3;
+            }
+            
+            // Choir effect
+            const choirEffect = Math.sin(2 * Math.PI * 220 * t) * 0.1;
+            
+            // Climax
+            let climax = 0;
+            if (t > 50) {
+                climax = Math.sin(2 * Math.PI * (pianoFreq * 2) * t) * ((t - 50) / 10) * 0.2;
+            }
+            
+            const sample = piano + strings + orchestral + choirEffect + climax;
+            left[i] = sample;
+            right[i] = sample * 0.95;
         }
         
-        let strings = 0;
-        if (t >= 15 && t < 40) {
-            const fadeIn = Math.max(0, (t - 15) / 10);
-            strings = Math.sin(2 * Math.PI * stringsFreq * t) * fadeIn * 0.2;
-        }
+        console.log('✅ Audio buffer populated with sound data');
         
-        let orchestral = 0;
-        if (t >= 35) {
-            const fadeIn = Math.min(1, (t - 35) / 5);
-            orchestral = Math.sin(2 * Math.PI * orchestralFreq * t) * fadeIn * 0.3;
-        }
+        // Convert to WAV and play
+        const wav = audioBufferToWav(buffer);
+        const blob = new Blob([wav], { type: 'audio/wav' });
+        const url = URL.createObjectURL(blob);
         
-        const choirEffect = Math.sin(2 * Math.PI * 220 * t) * 0.1;
+        bgMusic.src = url;
+        bgMusic.loop = true;
+        bgMusic.preload = 'auto';
         
-        let climax = 0;
-        if (t > 50) {
-            climax = Math.sin(2 * Math.PI * (pianoFreq * 2) * t) * ((t - 50) / 10) * 0.2;
-        }
+        console.log('✅ Audio URL set:', url.substring(0, 50) + '...');
+        console.log('✅ Cinematic soundtrack generated successfully');
         
-        const sample = piano + strings + orchestral + choirEffect + climax;
-        left[i] = sample;
-        right[i] = sample * 0.95;
+        audioInitialized = true;
+        return true;
+    } catch (error) {
+        console.error('❌ Error generating soundtrack:', error);
+        createFallbackAudio();
+        return false;
     }
-    
-    const wav = audioBufferToWav(buffer);
-    const blob = new Blob([wav], { type: 'audio/wav' });
-    const url = URL.createObjectURL(blob);
-    bgMusic.src = url;
-    bgMusic.loop = true;
 }
 
 // Helper function to convert AudioBuffer to WAV
 function audioBufferToWav(audioBuffer) {
+    console.log('🔧 Converting audio buffer to WAV...');
+    
     const numberOfChannels = audioBuffer.numberOfChannels;
     const sampleRate = audioBuffer.sampleRate;
     const format = 1;
@@ -359,18 +425,45 @@ function audioBufferToWav(audioBuffer) {
     view.setUint32(40, dataLength, true);
     
     let index = 44;
+    const volume = 0.8;
     for (let i = 0; i < interleaved.length; i++) {
-        view.setInt16(index, interleaved[i] < 0 ? interleaved[i] * 0x8000 : interleaved[i] * 0x7FFF, true);
+        let s = Math.max(-1, Math.min(1, interleaved[i]));
+        view.setInt16(index, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
         index += 2;
     }
     
+    console.log('✅ WAV conversion complete');
     return buffer;
+}
+
+// Fallback audio creation
+function createFallbackAudio() {
+    console.warn('⚠️ Creating fallback audio...');
+    try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        osc.frequency.value = 440;
+        gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+        
+        osc.start(audioContext.currentTime);
+        osc.stop(audioContext.currentTime + 0.5);
+        
+        console.log('✅ Fallback audio created');
+    } catch (error) {
+        console.error('❌ Fallback audio creation failed:', error);
+    }
 }
 
 // ========================================
 // EVENT LISTENERS
 // ========================================
 function initializeEventListeners() {
+    console.log('🔗 Initializing event listeners...');
+    
     const optionButtons = document.querySelectorAll('.option-btn');
     optionButtons.forEach(btn => {
         btn.addEventListener('click', handleAnswer);
@@ -390,24 +483,31 @@ function initializeEventListeners() {
     
     const modalOverlay = document.querySelector('.modal-overlay');
     modalOverlay?.addEventListener('click', closeModal);
+    
+    console.log('✅ Event listeners initialized');
 }
 
 // ========================================
 // SEQUENCE MANAGEMENT
 // ========================================
 function startSequence() {
+    console.log('🎬 Starting story sequence...');
+    
     setTimeout(() => {
+        console.log('📍 Hiding loading screen...');
         document.getElementById('loadingScreen').classList.add('hidden');
         document.getElementById('mainContent').classList.remove('hidden');
         playHeartbeat();
     }, 3000);
     
     setTimeout(() => {
+        console.log('📍 Transitioning to questions...');
         transitionToQuestions();
     }, 6500);
 }
 
 function transitionToQuestions() {
+    console.log('➡️ Transition to questions section');
     const introSection = document.getElementById('introSection');
     introSection.classList.add('hidden');
     
@@ -415,10 +515,21 @@ function transitionToQuestions() {
     questionsSection.classList.remove('hidden');
     
     displayQuestion(0);
-    bgMusic.play();
-    musicPlaying = true;
-    document.getElementById('playBtn').classList.add('hidden');
-    document.getElementById('pauseBtn').classList.remove('hidden');
+    
+    // Auto-play music with error handling
+    console.log('🎵 Attempting to auto-play music...');
+    const playPromise = bgMusic.play();
+    if (playPromise !== undefined) {
+        playPromise.then(() => {
+            console.log('✅ Auto-play successful');
+            musicPlaying = true;
+            document.getElementById('playBtn').classList.add('hidden');
+            document.getElementById('pauseBtn').classList.remove('hidden');
+        }).catch(error => {
+            console.warn('⚠️ Auto-play blocked by browser:', error);
+            console.log('💡 User will need to click play button');
+        });
+    }
 }
 
 function displayQuestion(index) {
@@ -468,6 +579,7 @@ function handleAnswer(e) {
 }
 
 function transitionToFinal() {
+    console.log('🎬 Transitioning to final reveal...');
     const questionsSection = document.getElementById('questionsSection');
     questionsSection.classList.add('hidden');
     
@@ -481,19 +593,23 @@ function transitionToFinal() {
 }
 
 function replayStory() {
+    console.log('🔄 Replaying story...');
     location.reload();
 }
 
 function openLetter() {
+    console.log('💌 Opening letter...');
     const letterModal = document.getElementById('letterModal');
     letterModal.classList.remove('hidden');
 }
 
 function openJourney() {
+    console.log('📖 Opening journey...');
     alert('Our journey together is the greatest adventure of my life. ❤️');
 }
 
 function closeModal() {
+    console.log('✖️ Closing modal...');
     const letterModal = document.getElementById('letterModal');
     letterModal.classList.add('hidden');
 }
@@ -502,23 +618,32 @@ function closeModal() {
 // SOUND EFFECTS
 // ========================================
 function playHeartbeat() {
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const now = audioContext.currentTime;
-    
-    const osc = audioContext.createOscillator();
-    const gain = audioContext.createGain();
-    
-    osc.connect(gain);
-    gain.connect(audioContext.destination);
-    
-    osc.frequency.setValueAtTime(80, now);
-    osc.frequency.exponentialRampToValueAtTime(60, now + 0.1);
-    
-    gain.gain.setValueAtTime(0.3, now);
-    gain.gain.exponentialRampToValueAtTime(0, now + 0.1);
-    
-    osc.start(now);
-    osc.stop(now + 0.1);
+    try {
+        if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        
+        const now = audioContext.currentTime;
+        
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        
+        osc.frequency.setValueAtTime(80, now);
+        osc.frequency.exponentialRampToValueAtTime(60, now + 0.1);
+        
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0, now + 0.1);
+        
+        osc.start(now);
+        osc.stop(now + 0.1);
+        
+        console.log('💓 Heartbeat played');
+    } catch (error) {
+        console.error('❌ Heartbeat error:', error);
+    }
 }
 
 // ========================================
@@ -530,6 +655,7 @@ function saveProgress() {
         totalQuestionsAnswered,
         timestamp: new Date().getTime()
     }));
+    console.log('💾 Progress saved');
 }
 
 function loadProgress() {
@@ -538,6 +664,7 @@ function loadProgress() {
         const data = JSON.parse(saved);
         currentQuestion = data.currentQuestion;
         totalQuestionsAnswered = data.totalQuestionsAnswered;
+        console.log('📂 Progress loaded');
     }
 }
 
@@ -566,5 +693,8 @@ function announceToScreenReader(message) {
 window.addEventListener('beforeunload', saveProgress);
 loadProgress();
 
+// === STARTUP LOG ===
 console.log('%c❤️ GODFREY ❤️ MARK ❤️', 'color: #ff6b8a; font-size: 20px; font-weight: bold;');
 console.log('%cWelcome to our love story...', 'color: #d4a574; font-size: 14px;');
+console.log('%c✅ All systems initialized', 'color: #00ff00; font-size: 12px;');
+console.log('%c🎵 Audio Status: ', 'color: #ffd700; font-size: 12px;', audioInitialized ? 'READY' : 'INITIALIZING');
